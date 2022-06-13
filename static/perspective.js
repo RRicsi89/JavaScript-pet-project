@@ -1,7 +1,7 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 const fov = 250;
-const strafeSpeed = 3;
+const strafeSpeed = 6;
 const edge = 260;
 const gravity = 0.0003;
 const characterHeight = 50;
@@ -21,6 +21,7 @@ let direction;
 let lamps = [];
 let bullets = [];
 let shot = false;
+let sparks = [];
 
 let mouse = {
     x: 0,
@@ -73,13 +74,13 @@ window.addEventListener("keyup", function (event) {
 window.addEventListener("click", (event) => {
     if (shot === false) {
         shot = true;
-        let bullet = new Bullet(event.x, event.y);
+        let bullet = new Bullet(event.clientX, event.clientY);
         bullet.draw();
-        bullets.push(bullet);
+        bullets.unshift(bullet);
+        setTimeout(() => {
+            shot = false;
+        }, 1000);
     }
-    setTimeout(() => {
-        shot = false;
-    }, 1000);
 })
 
 function movement (event) {
@@ -107,7 +108,7 @@ function movement (event) {
         }
     }
     if (event.key === "f") {
-        console.log(bullets[0].velocityX);
+        console.log(mouse.x, ":", mouse.y);
     }
 }
 
@@ -120,19 +121,50 @@ function render () {
     moveStar();
 
     let len = lamps.length;
-    for (let i = 0; i < len; i++ ) {
-        lamps[i].update();
-        if (lamps[i].lampPixels.length === 0) {
-            lamps.splice(i, 1);
+    if (len > 0) {
+        for (let i = 0; i < len; i++) {
+            lamps[i].update();
+            if (lamps[i].lampPixels.length === 0) {
+                lamps.splice(i, 1);
+            }
         }
     }
 
     if (bullets.length > 0) {
         let len = bullets.length;
-        for (let i = 0; i < len; i++ ) {
+        bullet: for (let i = 0; i < len; i++ ) {
             bullets[i].update();
+            if (lamps.length > 0) {
+                for (let l = 0; l < lamps.length; l++) {
+                    if (bullets[i].x - bullets[i].r / 2 > lamps[l].x - 10 && bullets[i].x - bullets[i].r / 2 < lamps[l].x + 30
+                        && bullets[i].y - bullets[i].r / 2 > Math.abs(lamps[l].y) && bullets[i].y - bullets[i].r / 2 < Math.abs(lamps[l].y + 400)
+                        && Math.round(bullets[i].z) === Math.round(lamps[l].z) + (10 - Math.round(lamps[l].z % 10))) {
+                        let floor = lamps[l].bottom;
+                        for (let i = 0; i < 300; i++) {
+                            let x = lamps[l].x;
+                            let y = Math.random() * (lamps[l].height + 1) + lamps[l].top;
+                            let dx = Math.random() * 10 - 5;
+                            let dy = Math.random() * 50 - 25;
+                            sparks.push(new Spark(x, y, dx, dy, 3, floor));
+                        }
+                        console.log(sparks);
+                        lamps.splice(l, 1);
+                        bullets.splice(i, 1);
+                        continue bullet;
+                    }
+                }
+            }
             if (bullets[i].bulletsPixels.length === 0) {
                 bullets.splice(i, 1);
+            }
+        }
+    }
+    let sparkLength = sparks.length;
+    if (sparkLength > 0) {
+        for (let i = sparkLength - 1; i >= 0; i--) {
+            sparks[i].update();
+            if (Math.floor(sparks[i].dx) === 0) {
+                sparks.splice(i, 1);
             }
         }
     }
@@ -153,12 +185,13 @@ function init () {
 
 function animate() {
     requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
     render();
     if (Math.round(distance) % 40 === 0 && direction === "w") {
         distance++;
         let lamp = new Lamp();
         lamp.draw();
-        lamps.push(lamp);
+        lamps.unshift(lamp);
     }
 
     speed = 0;

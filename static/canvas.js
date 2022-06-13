@@ -78,7 +78,7 @@ function Circle(x, y, dx, dy, radius) {
         c.fill();
     }
     this.update = function () {
-        if (this.x + this.radius> innerWidth || this.x - this.radius < 0) {
+        if (this.x + this.radius > innerWidth || this.x - this.radius < 0) {
         this.dx = -this.dx;
         }
         if (this.y + this.radius> innerHeight || this.y - this.radius < 0) {

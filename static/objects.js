@@ -26,6 +26,7 @@ function createRoadEdge() {
 }
 
 function createStar() {
+    stars = [];
     for (let i = 0; i < 100; i++) {
         let x = Math.random() * innerWidth * 2 - innerWidth;
         let y = Math.random() * innerHeight - 1.5 * innerHeight;
@@ -39,6 +40,9 @@ function Lamp () {
     this.y = 0;
     this.z = 0;
     this.r = 30;
+    this.height = 0;
+    this.top = 0;
+    this.bottom = 0;
     this.lampPixels = [];
     this.lampTops = [];
     this.lampLights = [];
@@ -61,9 +65,6 @@ function Lamp () {
                 this.lampLights.push({"x": x, "y": innerHeight / 2, "z": fov + z});
             }
         }
-        this.x = this.lampPixels[0].x;
-        this.y = this.lampPixels[0].y;
-        this.z = this.lampPixels[0].z;
     }
 
     this.update = function () {
@@ -90,7 +91,17 @@ function Lamp () {
             if (lamp.z < -fov || lamp.z > fov) {
                 this.lampPixels.splice(i, 1);
             }
+            if (i === 0) {
+                this.x = x2d;
+                this.y = y2d;
+                this.z = lamp.z;
+                this.top = y2d;
+            }
+            if (i === this.lampPixels.length - 1) {
+                this.bottom = y2d;
+            }
         }
+        this.height = Math.abs(this.top - this.bottom);
         ctx.putImageData(lampData, 0, 0);
 
         let lampTopData = ctx.getImageData(0, 0, w, h);
@@ -152,6 +163,7 @@ class Bullet {
         this.x = w / 2;
         this.y = h / 2;
         this.z = -fov;
+        this.r = 5;
         this.speed = 10;
         this.bulletsPixels = [];
         this.mouseX = mouseX;
@@ -165,7 +177,7 @@ class Bullet {
             for (let r = 0; r < 3; r += 1) {
                 let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
                 let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
-                this.bulletsPixels.push({"x": x, "y": y, "z": -fov});
+                this.bulletsPixels.push({"x": x - xOffset, "y": y, "z": -fov});
             }
         }
 
@@ -173,7 +185,7 @@ class Bullet {
             for (let r = 0; r < 4; r += 1) {
                 let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
                 let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
-                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.1});
+                this.bulletsPixels.push({"x": x - xOffset, "y": y, "z": -fov + 0.1});
             }
         }
 
@@ -181,7 +193,7 @@ class Bullet {
             for (let r = 0; r < 5; r += 1) {
                 let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
                 let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
-                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.2});
+                this.bulletsPixels.push({"x": x - xOffset, "y": y, "z": -fov + 0.2});
             }
         }
 
@@ -189,7 +201,7 @@ class Bullet {
             for (let r = 0; r < 4; r += 1) {
                 let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
                 let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
-                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.3});
+                this.bulletsPixels.push({"x": x - xOffset, "y": y, "z": -fov + 0.3});
             }
         }
 
@@ -197,7 +209,7 @@ class Bullet {
             for (let r = 0; r < 3; r += 1) {
                 let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
                 let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
-                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.4});
+                this.bulletsPixels.push({"x": x - xOffset, "y": y, "z": -fov + 0.4});
             }
         }
     }
@@ -209,7 +221,7 @@ class Bullet {
             let bullet = this.bulletsPixels[i];
             let scale = fov / (fov + bullet["z"]);
 
-            let x2d = (bullet["x"] + 50 + xOffset) * scale + xLook + mouse.x - this.velocityX;
+            let x2d = (bullet["x"] + xOffset) * scale + xLook + mouse.x - this.velocityX;
             if (yOffset > 1) {
                 yOffset -= gravity;
             }
@@ -218,7 +230,7 @@ class Bullet {
             if (x2d >= 0 && x2d <= w && y2d >= 0 && y2d <= h) {
                 let color = (Math.round(y2d) * bulletData.width + Math.round(x2d)) * 4;
                 bulletData.data[color] = 255;
-                bulletData.data[color + 1] = 255;
+                bulletData.data[color + 1] = 0;
                 bulletData.data[color + 2] = 0;
                 bulletData.data[color + 3] = 255;
             }
@@ -226,7 +238,54 @@ class Bullet {
             if (bullet.z > 2 * fov) {
                 this.bulletsPixels.splice(i, 1);
             }
+            if (i === this.bulletsPixels.length - 1) {
+                this.x = x2d;
+                this.y = y2d;
+                this.z = bullet.z;
+            }
         }
         ctx.putImageData(bulletData, 0, 0);
+    }
+}
+
+class Spark {
+    constructor(x, y, dx, dy, gravity, floor) {
+        this.x = x;
+        this.y = y;
+        this.originalX = x;
+        this.originalY = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = 1;
+        this.g = gravity;
+        this.floor = floor;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.strokeStyle = "yellow";
+        ctx.stroke();
+        ctx.fillStyle = "yellow";
+        ctx.fill();
+    }
+
+    update() {
+        if (this.y >= this.floor){
+            this.dy = this.floor;
+            if (this.dx >= 0) {
+                this.dx -= 0.2;
+                this.x -= this.dx;
+            } else {
+                this.dx += 0.2;
+                this.x -= this.dx;
+            }
+
+        } else {
+            this.y -= this.dy;
+            this.dy -= this.g;
+            this.x -= this.dx;
+        }
+        this.draw();
     }
 }
