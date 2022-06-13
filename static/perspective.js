@@ -19,6 +19,8 @@ let distance = 0;
 let lastKey;
 let direction;
 let lamps = [];
+let bullets = [];
+let shot = false;
 
 let mouse = {
     x: 0,
@@ -68,6 +70,18 @@ window.addEventListener("keyup", function (event) {
     }
 })
 
+window.addEventListener("click", (event) => {
+    if (shot === false) {
+        shot = true;
+        let bullet = new Bullet(event.x, event.y);
+        bullet.draw();
+        bullets.push(bullet);
+    }
+    setTimeout(() => {
+        shot = false;
+    }, 1000);
+})
+
 function movement (event) {
     switch (event.key) {
         case "w":
@@ -93,7 +107,7 @@ function movement (event) {
         }
     }
     if (event.key === "f") {
-        console.log(lamps.length);
+        console.log(bullets[0].velocityX);
     }
 }
 
@@ -110,6 +124,16 @@ function render () {
         lamps[i].update();
         if (lamps[i].lampPixels.length === 0) {
             lamps.splice(i, 1);
+        }
+    }
+
+    if (bullets.length > 0) {
+        let len = bullets.length;
+        for (let i = 0; i < len; i++ ) {
+            bullets[i].update();
+            if (bullets[i].bulletsPixels.length === 0) {
+                bullets.splice(i, 1);
+            }
         }
     }
 }

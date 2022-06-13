@@ -146,3 +146,87 @@ function Lamp () {
         ctx.putImageData(lampLightData, 0, 0);
     }
 }
+
+class Bullet {
+    constructor(mouseX, mouseY) {
+        this.x = w / 2;
+        this.y = h / 2;
+        this.z = -fov;
+        this.speed = 10;
+        this.bulletsPixels = [];
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+        this.velocityX = (this.x - this.mouseX) * 2;
+        this.velocityY = (this.y - this.mouseY) * 2;
+    }
+
+    draw() {
+        for (let alfa = 0; alfa < 360; alfa += 1) {
+            for (let r = 0; r < 3; r += 1) {
+                let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
+                let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
+                this.bulletsPixels.push({"x": x, "y": y, "z": -fov});
+            }
+        }
+
+        for (let alfa = 0; alfa < 360; alfa += 1) {
+            for (let r = 0; r < 4; r += 1) {
+                let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
+                let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
+                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.1});
+            }
+        }
+
+        for (let alfa = 0; alfa < 360; alfa += 1) {
+            for (let r = 0; r < 5; r += 1) {
+                let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
+                let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
+                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.2});
+            }
+        }
+
+        for (let alfa = 0; alfa < 360; alfa += 1) {
+            for (let r = 0; r < 4; r += 1) {
+                let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
+                let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
+                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.3});
+            }
+        }
+
+        for (let alfa = 0; alfa < 360; alfa += 1) {
+            for (let r = 0; r < 3; r += 1) {
+                let x = Math.round(r * Math.cos(alfa * Math.PI / 180));
+                let y = Math.round(r * Math.sin(alfa * Math.PI / 180));
+                this.bulletsPixels.push({"x": x, "y": y, "z": -fov + 0.4});
+            }
+        }
+    }
+
+    update() {
+        let bulletData = ctx.getImageData(0, 0, w, h);
+        let i = this.bulletsPixels.length;
+        while (i--) {
+            let bullet = this.bulletsPixels[i];
+            let scale = fov / (fov + bullet["z"]);
+
+            let x2d = (bullet["x"] + 50 + xOffset) * scale + xLook + mouse.x - this.velocityX;
+            if (yOffset > 1) {
+                yOffset -= gravity;
+            }
+            let y2d = (bullet["y"] + 100 + yOffset) * scale + yLook + mouse.y - this.velocityY;
+
+            if (x2d >= 0 && x2d <= w && y2d >= 0 && y2d <= h) {
+                let color = (Math.round(y2d) * bulletData.width + Math.round(x2d)) * 4;
+                bulletData.data[color] = 255;
+                bulletData.data[color + 1] = 255;
+                bulletData.data[color + 2] = 0;
+                bulletData.data[color + 3] = 255;
+            }
+            bullet.z += this.speed;
+            if (bullet.z > 2 * fov) {
+                this.bulletsPixels.splice(i, 1);
+            }
+        }
+        ctx.putImageData(bulletData, 0, 0);
+    }
+}
