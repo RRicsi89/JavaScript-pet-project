@@ -254,6 +254,10 @@ class Spark {
         this.y = y;
         this.originalX = x;
         this.originalY = y;
+        this.originalXoffset = xOffset;
+        this.originalYoffset = yOffset;
+        this.originalXlook = mouse.x;
+        this.originalYlook = mouse.y;
         this.dx = dx;
         this.dy = dy;
         this.radius = 1;
@@ -271,20 +275,24 @@ class Spark {
     }
 
     update() {
-        if (this.y >= this.floor){
-            this.dy = this.floor;
+        if (this.originalY >= this.floor){
+            this.y = this.originalY + (mouse.y - this.originalYlook);
             if (this.dx >= 0) {
                 this.dx -= 0.2;
-                this.x -= this.dx;
+                this.x = (this.originalX + (mouse.x - this.originalXlook)) + (xOffset - this.originalXoffset);
+                this.originalX -= this.dx;
             } else {
                 this.dx += 0.2;
-                this.x -= this.dx;
+                this.x = (this.originalX + (mouse.x - this.originalXlook)) + (xOffset - this.originalXoffset);
+                this.originalX -= this.dx;
             }
 
         } else {
-            this.y -= this.dy;
+            this.y = this.originalY + (mouse.y - this.originalYlook);
+            this.originalY -= this.dy;
             this.dy -= this.g;
-            this.x -= this.dx;
+            this.x = (this.originalX + (mouse.x - this.originalXlook)) + (xOffset - this.originalXoffset);
+            this.originalX -= this.dx;
         }
         this.draw();
     }
