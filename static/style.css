@@ -1,3 +1,11 @@
 canvas {
     cursor: crosshair;
 }
+
+.legend {
+    position: fixed;
+    z-index: 50;
+    top: 10px;
+    right: 20px;
+    color: greenyellow;
+}
