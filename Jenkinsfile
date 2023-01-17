@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker 'rancher/dind:v1.10.3-rancher1' }
+    agent any
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHub_Credentials')
     }
@@ -19,6 +19,11 @@ pipeline {
             steps {
                 sh 'docker run -d -p 5000:5000 rricsi/jenkins:petproject'
             }
+        }
+    }
+    post {
+        always {
+            sh 'docker logout'
         }
     }
 }
