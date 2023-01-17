@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'rancher/dind:v1.10.3-rancher1'
-        }
-    }
+    agent { docker 'rancher/dind:v1.10.3-rancher1' }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DockerHub_Credentials')
     }
