@@ -9,7 +9,7 @@ def index():
 
 
 def main():
-    app.run(debug=True)
+    app.run(debug=False, port=5000)
 
 
 if __name__ == "__main__":
